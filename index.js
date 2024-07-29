@@ -31,6 +31,7 @@ app.get('/song/:id', async (req, res) => {
       res.status(200).json({
         audioUrl: map[videoId],
       });
+      return;
     }
     let audioFormat = await getAudio(videoId);
     if (!audioFormat?.url) {
@@ -41,9 +42,7 @@ app.get('/song/:id', async (req, res) => {
       audioUrl: audioFormat?.url || '',
     });
   } catch (err) {
-    // console.error(error);
-    if (err instanceof Error)
-      res.status(500).send(`internal server error "${err.message}"`);
+    res.status(500).send('internal server error');
   }
 });
 
