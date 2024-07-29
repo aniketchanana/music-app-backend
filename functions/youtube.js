@@ -1,11 +1,16 @@
 const express = require('express');
-const app = express();
+const serverless = require('serverless-http');
 const ytdl = require('ytdl-core');
 const cors = require('cors');
 
-app.use(cors());
+const app = express();
+const router = express.Router();
 
-app.get('/song/:id', async (req, res) => {
+app.use(cors());
+app.use('/.netlify/functions/youtube', router);
+
+router.get('/hello', (req, res) => res.send('Hello World!'));
+router.get('/song/:id', async (req, res) => {
   try {
     let info = await ytdl.getInfo(req.params.id);
     let audioFormatHigh = ytdl.chooseFormat(info.formats, {
@@ -17,14 +22,14 @@ app.get('/song/:id', async (req, res) => {
       filter: 'audioonly',
     });
     res.status(200).json({
+      info,
       audioFormatHigh: audioFormatHigh.url,
       audioFormatLow: audioFormatLow.url,
     });
   } catch (err) {
-    // console.error(error);
     if (err instanceof Error)
       res.status(500).send(`internal server error "${err.message}"`);
   }
 });
 
-app.listen(process.env.PORT || 3000, () => console.log('server is running'));
+module.exports.handler = serverless(app);
